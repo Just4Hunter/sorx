@@ -1,3 +1,4 @@
+# Since the header is hardcoded in cors.py, idk wtf I'm supposed to do with this, but I'll just keep it here.
 header:
   high_priority:
     - "Authorization"

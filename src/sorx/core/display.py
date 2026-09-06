@@ -100,13 +100,17 @@ def findings(url, target_findings, errors):
     for finding in target_findings:
         finding_id = finding[0]
         name = finding[1]
+        related = finding[2]
 
         severity = get_severity(finding_id)
         color = SEVERITY_COLORS.get(severity, GREY)
 
-        print(
-            f"  {color}[{finding_id}]{Style.RESET_ALL} {name}"
-        )
+        output = f"  {color}[{finding_id}]{Style.RESET_ALL} {name}"
+
+        if related:
+            output += f"   {format_related(related)}"
+
+        print(output)
 
 
 def summary(stat):
@@ -174,6 +178,20 @@ def show_id_details(rule_id):
             for line in example["response"].strip().splitlines():
                 print(f"      {line}")
 
+
+def format_related(related):
+    if not related:
+        return ""
+
+    related_ids = []
+
+    for related_id in related:
+        severity = get_severity(related_id)
+        color = SEVERITY_COLORS.get(severity, GREY)
+
+        related_ids.append(f"{color}{related_id}{Style.RESET_ALL}")
+
+    return (f"{GREY}-#- [Relate]:{Style.RESET_ALL} {{{', '.join(related_ids)}}}")
 
 def show_verbose(results):
     REQUEST_HEADER_BLACKLIST = {
@@ -266,9 +284,13 @@ def show_verbose(results):
             if findings:
                 print(f"\n{Fore.YELLOW}CORS:{Style.RESET_ALL}")
 
-                for finding_id, title in findings:
+                for finding_id, title, related in findings:
                     severity = get_severity(finding_id)
-                    color = SEVERITY_COLORS.get(severity, GREY,)
+                    color = SEVERITY_COLORS.get(severity, GREY)
 
                     print(f"  [{color}{finding_id}{Style.RESET_ALL}] {title}")
+
+                    if related:
+                        print(f"      {format_related(related)}")
+
             print("\n" + "─" * 44)

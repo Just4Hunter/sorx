@@ -114,3 +114,45 @@ def analyze(response, task):
             findings.append(("CORS-904", "Origin reflection with credentials and sensitive headers"))
 
     return findings
+
+
+def prioritize_findings(findings):
+    # More specific rules suppress the general rules they cover.
+    supersedes = {
+        "CORS-101": {"CORS-100"},
+        "CORS-200": {"CORS-201"},
+        "CORS-501": {"CORS-500"},
+        "CORS-900": {"CORS-101", "CORS-300"},
+        "CORS-901": {"CORS-101", "CORS-300", "CORS-400"},
+        "CORS-902": {"CORS-101"},
+        "CORS-903": {"CORS-101"},
+        "CORS-904": {"CORS-901", "CORS-101", "CORS-300", "CORS-400",},
+    }
+
+    finding_ids = {rule_id for rule_id, _ in findings}
+
+    suppressed = set()
+    related = {}
+
+    # Find general rules covered by more specific rules.
+    for specific_rule, covered_rules in supersedes.items():
+        if specific_rule not in finding_ids:
+            continue
+
+        matched_rules = covered_rules & finding_ids
+
+        if not matched_rules:
+            continue
+
+        suppressed.update(matched_rules)
+        related[specific_rule] = sorted(matched_rules)
+
+    # Keep only the most specific findings.
+    result = []
+
+    for rule_id, title in findings:
+        if rule_id in suppressed:
+            continue
+
+        result.append((rule_id, title, related.get(rule_id, []),))
+    return result

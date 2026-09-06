@@ -2,7 +2,7 @@ import time
 from urllib.parse import urlparse
 import tldextract
 
-from sorx.checks.cors_analyze import analyze
+from sorx.checks.cors_analyze import analyze, prioritize_findings
 from sorx.core.display import header
 from sorx.core.requester import run as requester_run
 from sorx.data.loader.payload import load_payload
@@ -254,6 +254,8 @@ def update_elapsed(stat):
 
 
 def analyze_results(stat, results):
+    target_url = None
+
     for result in results:
         task = result.get("task")
 
@@ -280,13 +282,15 @@ def analyze_results(stat, results):
         if response is None:
             continue
 
-        for finding in analyze(
-            response=response,
-            task=task
-        ):
+        findings = analyze(response=response, task=task,)
+
+        for finding in findings:
             if finding not in stat.findings[target_url]:
                 stat.findings[target_url].append(finding)
 
+    # Prioritize ONCE, after all requests for this target are analyzed.
+    if target_url and target_url in stat.findings:
+        stat.findings[target_url] = prioritize_findings(stat.findings[target_url])
 
 def run(urls, config, on_target_done=None):
     mode = config.get("mode")

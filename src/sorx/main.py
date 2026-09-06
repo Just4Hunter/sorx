@@ -38,6 +38,11 @@ def build_flags():
 
 """)
 
+    # OPTIONS
+    options = parser.add_argument_group("OPTIONS")
+    options.add_argument("-v", "--version", action="store_true", help="Show version and check for updates")
+    options.add_argument("-h", "--help", action="store_true", help="Show this help message and exit")
+
     # INPUT
     input_group = parser.add_argument_group("INPUT")
     input_group.add_argument("-u", "--url", dest="url", type=str, help="Target URL")
@@ -53,21 +58,16 @@ def build_flags():
     performance.add_argument("--delay", dest="delay", type=float, help="Delay between requests (in seconds)")
     performance.add_argument("--rate", dest="rate", type=int, help="Maximum requests per second")
 
-    # OPTIONS
-    options = parser.add_argument_group("OPTIONS")
-    options.add_argument("-m", "--mode", dest="mode", choices=["quick", "normal", "deep"], metavar="MODE", default=None, help="Enable active CORS fuzzing: [quick, normal, deep]. Omit for passive mode.")
-    options.add_argument("--rule", dest="rule", nargs="+", type=str, help="Show CORS finding details")
-    options.add_argument("--verbose", dest="verbose", action="store_true", help="Show full evidence")
+    # MODE
+    mode = parser.add_argument_group("MODE")
+    mode.add_argument("-m", "--mode", dest="mode", choices=["quick", "normal", "deep"], metavar="MODE", default=None, help="Enable active CORS fuzzing: [quick, normal, deep]. Omit for passive mode.")
 
     # OUTPUT
     output = parser.add_argument_group("OUTPUT")
+    output.add_argument("--rule", dest="rule", nargs="+", type=str, help="Show CORS finding details")
+    output.add_argument("--verbose", dest="verbose", action="store_true", help="Show full evidence")
     output.add_argument("-o", "--output", dest="output", type=str, help="Output file path")
     output.add_argument("-j", "--json", dest="json", type=str, help="Output results in JSON format")
-
-    # UTILS
-    utils = parser.add_argument_group("UTILS")
-    utils.add_argument("-v", "--version", action="store_true", help="Show version and check for updates")
-    utils.add_argument("-h", "--help", action="store_true", help="Show this help message and exit")
 
     return parser
 
@@ -232,11 +232,7 @@ def main():
         print(display.logo())
 
         # Scan
-        stat = cors_run(
-            urls=targets,
-            config=config,
-            on_target_done=display.findings
-        )
+        stat = cors_run(urls=targets, config=config, on_target_done=display.findings)
 
         # Verbose
         if args.verbose:
