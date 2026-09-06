@@ -11,8 +11,9 @@ rules:
       Access-Control-Allow-Origin value.
     evidence: >
       Access-Control-Allow-Origin is set to '*'.
-    suggestion: >
-      Replace the wildcard with an explicit list of trusted origins.
+    suggestion: |
+      Try payload `Origin: https://attacker.example`.
+      Check whether sensitive data is accessible cross-origin without credentials.
     example:
       response: |
         Access-Control-Allow-Origin: *
@@ -31,9 +32,9 @@ rules:
     evidence: >
       The supplied Origin value is reflected in
       Access-Control-Allow-Origin.
-    suggestion: >
-      Validate the Origin against an explicit allowlist of trusted
-      origins instead of reflecting arbitrary origins.
+    suggestion: |
+      Try payload `Origin: https://attacker.example`.
+      Check whether sensitive response data is readable from an attacker-controlled origin.
     note: >
       If the target validates the origin against a trusted domain,
       replace the example origin with a domain trusted by the target.
@@ -54,9 +55,9 @@ rules:
       The supplied Origin value is reflected in
       Access-Control-Allow-Origin and
       Access-Control-Allow-Credentials is set to true.
-    suggestion: >
-      Restrict Access-Control-Allow-Origin to trusted origins and
-      avoid allowing credentials for untrusted origins.
+    suggestion: |
+      Try payload `Origin: https://attacker.example` with credentials.
+      Check whether authenticated responses containing sensitive data are readable cross-origin.
     note: >
       If the target validates the origin against a trusted domain,
       replace the example origin with a domain trusted by the target.
@@ -82,9 +83,9 @@ rules:
     evidence: >
       Access-Control-Allow-Origin is set to 'null' and
       Access-Control-Allow-Credentials is set to true.
-    suggestion: >
-      Do not allow the null origin with credentials. Restrict CORS
-      to trusted origins.
+    suggestion: |
+      Try payload `Origin: null`.
+      Check whether authenticated data is readable cross-origin.
     example:
       request: |
         Origin: null
@@ -100,9 +101,9 @@ rules:
       cross-origin requests.
     evidence: >
       Access-Control-Allow-Origin is set to 'null'.
-    suggestion: >
-      Remove the null origin from the CORS allowlist unless it is
-      explicitly required.
+    suggestion: |
+      Try payload `Origin: null`.
+      Check whether sensitive data is readable cross-origin.
     example:
       request: |
         Origin: null
@@ -123,9 +124,9 @@ rules:
     evidence: >
       A sensitive request header such as Authorization is included
       in Access-Control-Allow-Headers.
-    suggestion: >
-      Allow only the request headers required by the application and
-      avoid permitting sensitive headers unnecessarily.
+    suggestion: |
+      Try payload `Access-Control-Request-Headers: Authorization`.
+      Check whether the header is accepted during preflight.
     example:
       request: |
         Origin: https://attacker.example
@@ -143,9 +144,9 @@ rules:
       Access-Control-Allow-Headers value.
     evidence: >
       Access-Control-Allow-Headers is set to '*'.
-    suggestion: >
-      Replace the wildcard with an explicit list of required
-      request headers.
+    suggestion: |
+      Try payload `Access-Control-Request-Headers: Authorization` or any sensitive request header.
+      Check whether the header is accepted during preflight.
     example:
       request: |
         Origin: https://attacker.example
@@ -161,9 +162,9 @@ rules:
       Access-Control-Allow-Methods value.
     evidence: >
       Access-Control-Allow-Methods is set to '*'.
-    suggestion: >
-      Replace the wildcard with an explicit list of required
-      HTTP methods.
+    suggestion: |
+      Try payload `Access-Control-Request-Method: DELETE` or any state-changing HTTP method.
+      Check whether the method is allowed during preflight.
     example:
       request: |
         Origin: https://attacker.example
@@ -180,9 +181,9 @@ rules:
     evidence: >
       The requested method is included in Access-Control-Allow-Methods
       in response to the corresponding Access-Control-Request-Method.
-    suggestion: >
-      Allow only the HTTP methods required by the application instead of
-      dynamically reflecting requested methods.
+    suggestion: |
+      Try payload `Access-Control-Request-Method: DELETE` or any non-simple HTTP method.
+      Check whether the requested method is reflected.
     example:
       request: |
         Origin: https://attacker.example
@@ -201,9 +202,9 @@ rules:
     evidence: >
       The requested header is included in Access-Control-Allow-Headers
       in response to the corresponding Access-Control-Request-Headers.
-    suggestion: >
-      Allow only the request headers required by the application instead
-      of dynamically reflecting requested headers.
+    suggestion: |
+      Try payload `Access-Control-Request-Headers: Authorization` or any custom request header.
+      Check whether the requested header is reflected.
     example:
       request: |
         Origin: https://attacker.example
@@ -224,10 +225,9 @@ rules:
     evidence: >
       Access-Control-Allow-Origin reflects the supplied Origin while
       the response does not include Vary: Origin.
-    suggestion: >
-      Include Vary: Origin when dynamically generating
-      Access-Control-Allow-Origin responses and ensure CORS responses
-      are correctly handled by intermediary caches.
+    suggestion: |
+      Try payload `Origin: https://attacker.example` or any attacker-controlled origin.
+      Check whether a cached response from one origin is served to another.
     example:
       request: |
         Origin: https://attacker.example
@@ -248,9 +248,9 @@ rules:
     evidence: >
       A potentially sensitive response header is included in
       Access-Control-Expose-Headers.
-    suggestion: >
-      Expose only the response headers that the client actually
-      requires and avoid exposing sensitive information.
+    suggestion: |
+      Try exposed headers such as `X-Auth-Token` or `X-API-Key`.
+      Check whether their values contain sensitive information.
     example:
       response: |
         Access-Control-Expose-Headers: X-Auth-Token
@@ -273,10 +273,9 @@ rules:
       Access-Control-Allow-Origin and
       Access-Control-Allow-Credentials is set to true, even though
       the origin is not an actual subdomain of the trusted domain.
-    suggestion: >
-      Parse the origin and compare the hostname against the trusted
-      domain using an exact match or a strict subdomain check.
-      Avoid using simple string suffix or substring comparisons.
+    suggestion: |
+      Try payload `Origin: https://attackerexample.com` or `Origin: https://example.com.attacker.example`.
+      Check whether the attacker-controlled origin is accepted as trusted.
     note: >
       A hostname such as attackerexample.com may satisfy a naive
       check such as hostname.endswith("example.com"), while it is
@@ -299,10 +298,9 @@ rules:
     evidence: >
       An attacker-controlled hostname containing the trusted domain
       as a suffix is accepted and reflected as the allowed origin.
-    suggestion: >
-      Require the hostname to equal the trusted domain or end with
-      "." followed by the trusted domain. Do not treat arbitrary
-      suffix matches as trusted subdomains.
+    suggestion: |
+      Try payload `Origin: https://attackerexample.com` or any hostname variation that places the trusted domain outside a valid subdomain boundary.
+      Check whether the origin is incorrectly accepted as trusted.
     note: >
       For example, attacker.example.com may be a legitimate
       subdomain, while attackerexample.com is a different domain.
@@ -327,9 +325,9 @@ rules:
     evidence: >
       The supplied Origin is reflected, credentials are allowed,
       and Authorization is permitted by Access-Control-Allow-Headers.
-    suggestion: >
-      Restrict allowed origins to trusted domains and avoid allowing
-      credentials with untrusted origins or sensitive request headers.
+    suggestion: |
+      Try payload `Origin: https://attacker.example` with an authenticated request.
+      Check whether sensitive data can be read cross-origin using the allowed Authorization header.
     note: >
       If the target validates the origin against a trusted domain,
       replace the example origin with a domain trusted by the target.
@@ -352,9 +350,9 @@ rules:
     evidence: >
       The supplied Origin is reflected, credentials are allowed,
       and one or more sensitive headers are exposed or permitted.
-    suggestion: >
-      Restrict allowed origins and credentials, and avoid exposing
-      or permitting sensitive headers unless strictly required.
+    suggestion: |
+      Try payload `Origin: https://attacker.example` with any sensitive request header such as `Authorization`.
+      Check whether sensitive header values are readable cross-origin.
     note: >
       If the target validates the origin against a trusted domain,
       replace the example origin with a domain trusted by the target.
@@ -376,9 +374,9 @@ rules:
     evidence: >
       The supplied Origin is reflected, credentials are allowed,
       and broad or wildcard HTTP methods are permitted.
-    suggestion: >
-      Restrict allowed origins and credentials, and allow only the
-      HTTP methods required by the application.
+    suggestion: |
+      Try payload `Origin: https://attacker.example` with `Access-Control-Request-Method: DELETE`, `PUT`, or `PATCH`.
+      Check whether state-changing actions are possible cross-origin.
     note: >
       If the target validates the origin against a trusted domain,
       replace the example origin with a domain trusted by the target.
@@ -391,6 +389,7 @@ rules:
         Access-Control-Allow-Credentials: true
         Access-Control-Allow-Methods: *
 
+
   - id: CORS-903
     title: Origin reflection with credentials and wildcard permissions
     severity: high
@@ -402,9 +401,9 @@ rules:
       The supplied Origin is reflected, credentials are allowed,
       and Access-Control-Allow-Methods or Access-Control-Allow-Headers
       is set to '*'.
-    suggestion: >
-      Restrict allowed origins and credentials, and replace wildcard
-      methods or headers with an explicit allowlist of required values.
+    suggestion: |
+      Try payload `Origin: https://attacker.example` with any non-simple HTTP method or custom request header.
+      Check whether authenticated actions and responses are accessible cross-origin.
     note: >
       If the target validates the origin against a trusted domain,
       replace the example origin with a domain trusted by the target.
@@ -431,10 +430,9 @@ rules:
       one or more sensitive request headers are permitted by
       Access-Control-Allow-Headers, and one or more sensitive response
       headers are exposed through Access-Control-Expose-Headers.
-    suggestion: >
-      Restrict allowed origins and credentials, and avoid permitting
-      or exposing sensitive headers to untrusted origins unless
-      strictly required.
+    suggestion: |
+      Try payload `Origin: https://attacker.example` with `Access-Control-Request-Headers: Authorization`.
+      Check whether sensitive authenticated data or exposed response header values can be read cross-origin.
     note: >
       If the target validates the origin against a trusted domain,
       replace the example origin with a domain trusted by the target.
