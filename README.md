@@ -8,10 +8,16 @@ security-relevant CORS issues with a focus on **low noise and useful findings**.
 
 ![sorx UI](https://raw.githubusercontent.com/Pupsix/sorx/main/docs/demo.gif)
 
-> [!WARNING]
+> [!NOTE]
 > **sorx is currently under active development.**
-> 
-> This is an early test release. Features, detection rules, output formats, and CLI behavior may change in future versions.
+>
+> `sorx` is already usable for real-world CORS testing and has reached a fairly mature stage, but it is still evolving toward the project's long-term goals.
+>
+> It is, of course, not a perfect tool. There are still CORS cases that may not be detected, as well as potential false positives and false negatives. Detection coverage and accuracy will continue to be improved over time.
+>
+> Features, detection rules, output formats, and CLI behavior may also change in future versions.
+
+
 
 ## Features
 

@@ -61,3 +61,25 @@
 * Improved CORS detection coverage with additional preflight checks.
 * Improved finding correlation between origin, credentials, request headers, response headers, and allowed methods.
 * Improved deep mode preflight coverage while limiting unnecessary requests.
+
+## [0.2.2] - 2026-09-04
+
+### Changed
+
+* Maintenance release.
+* Internal improvements and fixes.
+* Honestly, I forgot about this version and even the release date.
+
+## [0.2.3] - 2026-09-06
+
+### Improved
+
+* Improve suggestions
+* Prioritize findings and improve UI
+
+## [0.2.4] - 2026-09-07
+
+### Improved
+
+* Update `CORS-904`
+* Improve Reporter
