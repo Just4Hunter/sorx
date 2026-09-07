@@ -419,7 +419,7 @@ rules:
         Access-Control-Allow-Headers: *
 
   - id: CORS-904
-    title: Origin reflection with credentials and sensitive headers
+    title: Origin reflection with credentials and sensitive headers on both sides
     severity: high
     description: >
       The server reflects an attacker-controlled origin, allows

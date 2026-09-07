@@ -7,7 +7,7 @@ from colorama import Fore, Style, init
 from sorx import __version__
 from sorx.checks.cors import run as cors_run
 from sorx.core import display, reporter
-from sorx.core.display import show_id_details, show_verbose
+from sorx.core.display import show_id_details, show_verbose, show_all_rules
 from sorx.core.requester import run
 
 init(autoreset=True)
@@ -35,6 +35,7 @@ def build_flags():
     sorx -u https://example.com -o result.txt    # Output in TXT
     sorx -u https://example.com -j result.json   # Output in JSON
     sorx -l targets.txt -m quick -t 20           # Scan a list of targets
+    sorx --rule                                  # List all available rules
 
 """)
 
@@ -64,7 +65,7 @@ def build_flags():
 
     # OUTPUT
     output = parser.add_argument_group("OUTPUT")
-    output.add_argument("--rule", dest="rule", nargs="+", type=str, help="Show CORS finding details")
+    output.add_argument("--rule", dest="rule", nargs="*", type=str, help="Show CORS finding details. Use `--rule` or `--rule all` to show all available rules.")
     output.add_argument("--verbose", dest="verbose", action="store_true", help="Show full evidence")
     output.add_argument("-o", "--output", dest="output", type=str, help="Output file path")
     output.add_argument("-j", "--json", dest="json", type=str, help="Output results in JSON format")
@@ -166,6 +167,7 @@ def build_config(args, headers):
         "mode": args.mode,
         "output": args.output or args.json,
         "json": bool(args.json),
+        "rule": args.rule
     }
 
 
@@ -201,10 +203,14 @@ def main():
             return
 
         # Show details
-        if args.rule:
-            for rule_id in args.rule:
-                show_id_details(rule_id)
+        if args.rule is not None:
+            if not args.rule or "all" in args.rule:
+                show_all_rules()
+            else:
+                for rule_id in args.rule:
+                    show_id_details(rule_id)
             return
+
 
         # Targets
         targets = get_targets(args, parser)

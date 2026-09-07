@@ -30,7 +30,7 @@ def logo():
     """
 
 
-def load_rules():
+def load_rules(config):
     current_dir = os.path.dirname(__file__)
     rules_path = os.path.abspath(
         os.path.join(
@@ -50,6 +50,13 @@ def load_rules():
     except (FileNotFoundError, yaml.YAMLError):
         return []
 
+
+def show_all_rules():
+    rules = load_rules({})
+
+    for rule in rules:
+        print(f"{rule['id']:<12} {rule['title']}")
+        
 
 def get_severity(finding_id):
     rule = get_rule(finding_id)
