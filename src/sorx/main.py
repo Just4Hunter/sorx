@@ -51,6 +51,7 @@ def build_flags():
     input_group.add_argument("-H", "--header", dest="header", type=str, help="Custom header <e.g., 'Hackerone: abcxyz'>")
     input_group.add_argument("-X", "--method", dest="method", type=str, default="GET", help="HTTP method (default: GET)")
     input_group.add_argument("-D", "--data", dest="data", type=str, help="Request body data")
+    input_group.add_argument("--trust", dest="trust", type=str, help="Set a trusted origin and disable automatic detection (e.g., '--trust https://example.com')")
 
     # PERFORMANCE
     performance = parser.add_argument_group("PERFORMANCE")
@@ -167,7 +168,8 @@ def build_config(args, headers):
         "mode": args.mode,
         "output": args.output or args.json,
         "json": bool(args.json),
-        "rule": args.rule
+        "rule": args.rule,
+        "trust": args.trust
     }
 
 
@@ -211,7 +213,6 @@ def main():
                     show_id_details(rule_id)
             return
 
-
         # Targets
         targets = get_targets(args, parser)
 
@@ -231,6 +232,16 @@ def main():
 
             headers[name] = value
 
+        # Trust
+        if args.trust:
+            args.trust = normalize_url(args.trust)
+
+            if not is_valid_url(args.trust):
+                parser.error(
+                    f"invalid trusted origin: {args.trust}\n"
+                    "trusted origin must be a valid HTTP/HTTPS URL"
+                )
+        
         # Configuration
         config = build_config(args=args, headers=headers)
 
@@ -239,6 +250,9 @@ def main():
 
         # Scan
         stat = cors_run(urls=targets, config=config, on_target_done=display.findings)
+
+        # Trust
+
 
         # Verbose
         if args.verbose:

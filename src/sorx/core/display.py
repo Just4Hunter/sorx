@@ -4,7 +4,7 @@ from colorama import Fore, Style, init
 
 from sorx import __version__
 from sorx.data.loader.rule import get_rule
-from sorx.checks.cors_analyze import analyze
+from sorx.checks.cors_analyze import analyze, prioritize_findings
 
 init(autoreset=True)
 
@@ -20,13 +20,22 @@ GREY = "\033[38;5;250m"
 
 
 def logo():
-    return fr"""
-    {Fore.LIGHTRED_EX}     _____   ____   ____   _  __ {Style.RESET_ALL}
-    {Fore.LIGHTRED_EX}    (  ___| (    \ (  ,_\ ( \/ / {Style.RESET_ALL}
-    {Fore.LIGHTRED_EX}     \___  \ \  \ \ \ \    :  : {Style.RESET_ALL}
-    {Fore.LIGHTRED_EX}      |_____) \____) \_)  /_/\_) {Style.RESET_ALL} {Fore.LIGHTYELLOW_EX}v{__version__}{Style.RESET_ALL}
+    TOP = "\033[38;2;148;0;211m"
+    MID = "\033[38;2;138;0;200m"
+    BOT = "\033[38;5;129m"
+    ANO = "\033[38;2;192;192;192m"
+    RES = Style.RESET_ALL
+    return fr"""                      
+{TOP}         . .       . .       . .       . .    {RES}
+{TOP}      .+'|=|`+. .+'|=|`+. .+'|=|`+. .+'| |`+. {RES}
+{TOP}      |  | `+.| |  | |  | |  | |  | |  | |  | {RES}
+{MID}      |  | .    |  | |  | |  |'. '. .' .`. `. {RES}
+{MID}      `+.|=|`+. |  | |  | |  | |  | |  | |  | {RES}
+{BOT}      .    |  | |  | |  | |  | |  | |  | |  | {RES}
+{BOT}      |`+. |  | |  | |  | |  | |  | |  | |  | {RES}
+{BOT}      `+.|=|.+' `+.|=|.+' `+.| |.+' `+.| |.+' {RES} {ANO}v{__version__}{RES}
     
-        {Fore.LIGHTYELLOW_EX}https://github.com/Pupsix/sorx{Style.RESET_ALL}
+        {ANO}https://github.com/Just4Hunter/sorx{RES}
     """
 
 
@@ -254,7 +263,8 @@ def show_verbose(results):
             findings = []
 
             if response is not None and error is None:
-                findings = analyze(response=response, task=task,)
+                findings = analyze(response=response, task=task)
+                findings = prioritize_findings(findings)
 
             # Request
             print(f"\n{Fore.YELLOW}Request:{Style.RESET_ALL}")

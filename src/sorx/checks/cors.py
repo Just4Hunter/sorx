@@ -130,7 +130,7 @@ def active(url, config, trust_hostname):
     mode = config.get("mode")
     base_headers = config.get("headers", {})
     jobs = []
-    trust = get_trust_parts(url)
+    trust = get_trust_parts(config.get("trust") or url)
     payloads = get_payloads(mode)
 
     origin_payloads = payloads["origin"]

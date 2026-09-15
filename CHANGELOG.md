@@ -83,3 +83,23 @@
 
 * Update `CORS-904`
 * Improve Reporter
+
+## [0.3.x] - DELETED
+
+### Note
+
+This version was heavily broken, so I deleted it and moved on to `0.4.x`. 💀
+
+## [0.4.0] - 2026-09-15
+
+### Added
+
+* Added `--trust` flag
+
+### Improved
+
+* `--trust` has a significant impact on scanning results and reduces a large amount of false positives (FPs)
+
+### Changed
+
+* Updated the logo
